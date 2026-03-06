@@ -20,7 +20,6 @@ import { useIntl } from 'react-intl';
 
 import { Field } from '@strapi/design-system';
 import { Loader } from '@strapi/design-system';
-import { DesignSystemProvider } from '@strapi/design-system';
 
 import { useFetchClient, useStrapiApp } from '@strapi/strapi/admin';
 
@@ -508,85 +507,83 @@ const JoditInput: React.FC<JoditInputProps> = ({
   const displayHint = hint;
 
   return (
-    <DesignSystemProvider>
-      <Field.Root
-        name={name}
-        id={name}
-        required={required}
-        error={error}
-        hint={displayHint}
-        style={{ position: 'relative' }}
-      >
+    <Field.Root
+      name={name}
+      id={name}
+      required={required}
+      error={error}
+      hint={displayHint}
+      style={{ position: 'relative' }}
+    >
 
-        <Field.Label>{displayLabel}</Field.Label>
+      <Field.Label>{displayLabel}</Field.Label>
 
-        <JoditContainer>
-          <JoditEditor
-            value={initialValue}
-            ref={editorRef}
-            editorRef={(editor: IJodit) => { editorRef.current = editor; }}
-            config={config}
-            onBlur={(newContent: string) => {
-              console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
-              const jodit = editorRef.current;
-              jodit?.selection.save();
-              onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
-            }}
-            onChange={(newContent: string) => {
-              console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
-              const jodit = editorRef.current;
-              jodit?.selection.save();
-              onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
-            }}
-          />
-        </JoditContainer>
-
-        {
-          displayDescription ? (
-            <Field.Hint>{displayDescription}</Field.Hint>
-          ) : null
-        }
-        {error ? <Field.Error>{error}</Field.Error> : null}
-
-        {/* Media Library Modal */}
-        <MediaLib
-          isOpen={mediaLibVisible}
-          onChange={handleMediaLibChange}
-          onToggle={toggleMediaLib}
+      <JoditContainer>
+        <JoditEditor
+          value={initialValue}
+          ref={editorRef}
+          editorRef={(editor: IJodit) => { editorRef.current = editor; }}
+          config={config}
+          onBlur={(newContent: string) => {
+            console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
+            const jodit = editorRef.current;
+            jodit?.selection.save();
+            onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
+          }}
+          onChange={(newContent: string) => {
+            console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
+            const jodit = editorRef.current;
+            jodit?.selection.save();
+            onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
+          }}
         />
+      </JoditContainer>
 
-        {
-          isLoading ?
+      {
+        displayDescription ? (
+          <Field.Hint>{displayDescription}</Field.Hint>
+        ) : null
+      }
+      {error ? <Field.Error>{error}</Field.Error> : null}
+
+      {/* Media Library Modal */}
+      <MediaLib
+        isOpen={mediaLibVisible}
+        onChange={handleMediaLibChange}
+        onToggle={toggleMediaLib}
+      />
+
+      {
+        isLoading ?
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(255,255,255,0.5)',
+            }}
+          >
             <div
               style={{
                 position: 'absolute',
                 top: 0,
-                right: 0,
+                left: 0,
                 width: '100%',
                 height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 background: 'rgba(255,255,255,0.5)',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.5)',
-                }}
-              >
-                <Loader />
-              </div>
+              <Loader />
             </div>
-            : null
-        }
-      </Field.Root>
-    </DesignSystemProvider>
+          </div>
+          : null
+      }
+    </Field.Root>
   );
 };
 
