@@ -75,6 +75,15 @@ const JoditContainer = styled.div`
     height: 19px;
     width: 19px;
   }
+
+  /* Визуализация кастомного класса в редакторе */
+  .text-to-copy {
+    background-color: #e3f2fd;
+    border: 1px dashed #2196f3;
+    padding: 2px 4px;
+    border-radius: 3px;
+    color: #0d47a1;
+  }
 `;
 
 // Utility function to prefix URLs (similar to CKEditor implementation)
@@ -252,7 +261,26 @@ const JoditInput: React.FC<JoditInputProps> = ({
       onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
       toggleMediaLib();
     }
-  }
+  };
+
+  // --- КАСТОМНАЯ КНОПКА copytext ---
+  const copyTextButton = {
+    name: 'copytext',
+    iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMjQiIGZpbGw9IiMwMDAwMDAiPjxwYXRoIGQ9Ik0zNjAtMjQwcS0zMyAwLTU2LjUtMjMuNVQyODAtMzIwdi00ODBxMC0zMyAyMy41LTU2LjVUMzYwLTg4MGgzNjBxMzMgMCA1Ni41IDIzLjVUODAwLTgwMHY0ODBxMCAzMy0yMy41IDU2LjVUNzIwLTI0MEgzNjBabTAtODBoMzYwdi00ODBIMzYwdjQ4MFpNMjAwLTgwcS0zMyAwLTU2LjUtMjMuNVQxMjAtMTYwdi01NjBoODB2NTYwaDQ0MHY4MEgyMDBabTE2MC0yNDB2LTQ4MCA0ODB6Ii8+PC9zdmc+',
+    tooltip: 'Делает текст копируемым',
+    exec: function (jodit: IJodit) {
+      console.log('text-to-copy btn pressed');
+      const selectedHtml = jodit.selection.html;
+
+      if (selectedHtml && selectedHtml.trim().length > 0) {
+        // Если выделен текст - оборачиваем его <span class="text-to-copy">
+        jodit.selection.insertHTML(`<span class="text-to-copy">${selectedHtml}</span>`);
+      } else {
+        // Если ничего не выделено, вставляем пустой шаблон
+        jodit.selection.insertHTML('<span class="text-to-copy">Текст для копирования</span>');
+      }
+    }
+  };
 
   const { formatMessage } = useIntl();
   const { post } = useFetchClient();
@@ -334,6 +362,7 @@ const JoditInput: React.FC<JoditInputProps> = ({
   if (mediaLibButtonIndex !== -1) {
     buttons[mediaLibButtonIndex] = mediaLibButton;
   }
+
   const removeButtons = options.removeButtons
     ? options.removeButtons.split(',').map(btn => btn.trim())
     : [];
@@ -378,6 +407,7 @@ const JoditInput: React.FC<JoditInputProps> = ({
     adaptive: false,            // Отключает общую адаптивность
     toolbarAdaptive: false,     // Запрещает прятать кнопки в "три точки"
     width: '100%',
+
     placeholder: formatMessage({
       id: placeholder || 'jodit-editor.placeholder',
       defaultMessage: intlLabel?.defaultMessage || 'Start typing here...',
@@ -398,7 +428,8 @@ const JoditInput: React.FC<JoditInputProps> = ({
     controls: {
       font: {
         list: Object.keys(fonts).length > 0 ? fonts : {},
-      }
+      },
+      copytext: copyTextButton, // COPYTEXT: регистрация кнопки
     },
 
     // Event handlers
