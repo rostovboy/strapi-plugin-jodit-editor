@@ -77,13 +77,13 @@ const JoditContainer = styled.div`
   }
 
   /* Визуализация кастомного класса в редакторе */
-  .text-to-copy {
+  .text-to-copy, .jodit-btn {
     background-color: #e3f2fd;
     border: 1px dashed #2196f3;
     padding: 2px 4px;
     border-radius: 3px;
     color: #0d47a1;
-  }
+  },
 `;
 
 // Utility function to prefix URLs (similar to CKEditor implementation)
@@ -282,6 +282,105 @@ const JoditInput: React.FC<JoditInputProps> = ({
     }
   };
 
+  const insertLinkButton = {
+    name: 'linkbtn',
+    iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIyNHB4IiBmaWxsPSIjMWYxZjFmIj48cGF0aCBkPSJNNjgwLTE2MHYtMTIwSDU2MHYtODBoMTIwdi0xMjBoODB2MTIwaDEyMHY4MEg3NjB2MTIwaC04MFpNNDQwLTI4MEgyODBxLTgzIDAtMTQxLjUtNTguNVQ4MC00ODBxMC04MyA1OC41LTE0MS41VDI4MC02ODBoMTYwdjgwSDI4MHEtNTAgMC04NSAzNXQtMzUgODVxMCA1MCAzNSA4NXQ4NSAzNWgxNjB2ODBaTTMyMC00NDB2LTgwaDMyMHY4MEgzMjBabTU2MC00MGgtODBxMC01MC0zNS04NXQtODUtMzVINTIwdi04MGgxNjBxODMgMCAxNDEuNSA1OC41VDg4MC00ODBaIi8+PC9zdmc+',
+    tooltip: 'Разместить кнопку-ссылку',
+    exec: function (jodit: IJodit) {
+      const sel = jodit.selection;
+      const selectedText =
+        jodit.editor?.ownerDocument?.getSelection()?.toString() || '';
+
+      const dialog = (jodit as any).dlg({
+        buttons: []
+      });
+
+      dialog.setHeader('Добавить кнопку-ссылку');
+
+      const content = document.createElement('div');
+      content.style.display = 'flex';
+      content.style.flexDirection = 'column';
+      content.style.gap = '10px';
+      content.style.minWidth = '300px';
+
+      const textInput = document.createElement('input');
+      textInput.placeholder = 'Текст кнопки';
+      textInput.value = selectedText || 'Текст кнопки';
+
+      const urlInput = document.createElement('input');
+      urlInput.placeholder = 'https://example.com';
+
+      const targetWrapper = document.createElement('label');
+      const targetCheckbox = document.createElement('input');
+      targetCheckbox.type = 'checkbox';
+      targetWrapper.appendChild(targetCheckbox);
+      targetWrapper.appendChild(document.createTextNode(' Открывать в новом окне'));
+
+      const styleSelect = document.createElement('select');
+
+      [
+        { value: 'btn-primary', label: 'Primary' },
+        { value: 'btn-secondary', label: 'Secondary' },
+        { value: 'btn-success', label: 'Success' },
+        { value: 'btn-warning', label: 'Warning' },
+        { value: 'btn-danger', label: 'Danger' },
+      ].forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.value;
+        option.textContent = s.label;
+        styleSelect.appendChild(option);
+      });
+
+      const actions = document.createElement('div');
+      actions.style.display = 'flex';
+      actions.style.justifyContent = 'flex-end';
+      actions.style.gap = '10px';
+
+      const okBtn = document.createElement('button');
+      okBtn.textContent = 'OK';
+      okBtn.className = 'jodit-ui-button jodit-ui-button_primary';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Отменить';
+      cancelBtn.className = 'jodit-ui-button';
+
+      actions.appendChild(cancelBtn);
+      actions.appendChild(okBtn);
+
+      content.appendChild(textInput);
+      content.appendChild(urlInput);
+      content.appendChild(targetWrapper);
+      content.appendChild(styleSelect);
+      content.appendChild(actions);
+
+      dialog.setContent(content);
+
+      okBtn.onclick = () => {
+        const text = textInput.value || 'Кнопка';
+        const url = urlInput.value || '#';
+        const style = styleSelect.value;
+        const target = targetCheckbox.checked
+          ? ' target="_blank" rel="noopener noreferrer"'
+          : '';
+
+        const html = `
+        <a href="${url}" class="btn ${style} jodit-btn"${target}>
+          ${text}
+        </a>
+    `;
+
+        sel.insertHTML(html);
+        dialog.close();
+      };
+
+      cancelBtn.onclick = () => {
+        dialog.close();
+      };
+
+      dialog.open();
+    }
+  };
+
   const { formatMessage } = useIntl();
   const { post } = useFetchClient();
 
@@ -430,6 +529,7 @@ const JoditInput: React.FC<JoditInputProps> = ({
         list: Object.keys(fonts).length > 0 ? fonts : {},
       },
       copytext: copyTextButton, // COPYTEXT: регистрация кнопки
+      linkbtn: insertLinkButton, // LINKBTN: регистрация кнопки
     },
 
     // Event handlers
@@ -567,6 +667,7 @@ const JoditInput: React.FC<JoditInputProps> = ({
           onChange={(newContent: string) => {
             console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
             const jodit = editorRef.current;
+
             jodit?.selection.save();
             onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
           }}
