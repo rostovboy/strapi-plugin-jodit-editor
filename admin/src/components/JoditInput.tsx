@@ -32,45 +32,56 @@ const JoditContainer = styled.div`
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
   }
+
   h1 {
     font-size: 4rem;
     margin-bottom: 1rem;
   }
+
   h2 {
     font-size: 3.5rem;
     margin-bottom: 0.75rem;
   }
+
   h3 {
     font-size: 3rem;
     margin-bottom: 0.5rem;
   }
+
   h4, h5, h6 {
     font-size: 2rem;
     margin-bottom: 0.25rem;
   }
+
   p {
     margin-bottom: 1rem;
     line-height: 1.6;
   }
+
   ul, ol {
     margin-bottom: 1rem;
     padding-left: 1.5rem;
   }
+
   ul {
     list-style-type: disc;
   }
+
   ol {
     list-style-type: decimal;
   }
+
   ul li, ol li {
     margin-bottom: 0.5rem;
   }
+
   blockquote {
     margin: 1rem 0;
     padding-left: 1rem;
     border-left: 4px solid #ccc;
     color: #666;
   }
+
   .jodit-toolbar-button_strapiMedia .jodit-icon {
     height: 19px;
     width: 19px;
@@ -83,7 +94,7 @@ const JoditContainer = styled.div`
     padding: 2px 4px;
     border-radius: 3px;
     color: #0d47a1;
-  },
+  }
 `;
 
 // Utility function to prefix URLs (similar to CKEditor implementation)
@@ -301,6 +312,7 @@ const JoditInput: React.FC<JoditInputProps> = ({
       content.style.display = 'flex';
       content.style.flexDirection = 'column';
       content.style.gap = '10px';
+      content.style.padding = '16px';
       content.style.minWidth = '300px';
 
       const textInput = document.createElement('input');
