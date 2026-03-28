@@ -640,6 +640,11 @@ const JoditInput: React.FC<JoditInputProps> = ({
   // Get the display hint
   const displayHint = hint;
 
+  // Фикс редактора в режиме кода !!!
+  const isSourceMode = (jodit: IJodit | null) => {
+    return (jodit as any)?.getMode?.() === 2;
+  };
+
   return (
     <Field.Root
       name={name}
@@ -667,6 +672,12 @@ const JoditInput: React.FC<JoditInputProps> = ({
           onChange={(newContent: string) => {
             console.log('📎 Jodit: Content changed', newContent?.length || 0, 'characters');
             const jodit = editorRef.current;
+
+            // Фикс редактора в режиме кода !!!
+            if (isSourceMode(jodit)) {
+              onChange({ target: { name, value: newContent } });
+              return;
+            }
 
             jodit?.selection.save();
             onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join('').trim() } });
