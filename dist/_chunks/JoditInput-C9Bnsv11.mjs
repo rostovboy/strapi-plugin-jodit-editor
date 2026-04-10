@@ -1,20 +1,15 @@
-"use strict";
-Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-const jsxRuntime = require("react/jsx-runtime");
-const react = require("react");
-const styled = require("styled-components");
-const JoditEditorImport = require("jodit-react");
-const reactIntl = require("react-intl");
-const designSystem = require("@strapi/design-system");
-const admin = require("@strapi/strapi/admin");
-const index = require("./index-Cz4dXn5P.js");
-const _interopDefault = (e) => e && e.__esModule ? e : { default: e };
-const styled__default = /* @__PURE__ */ _interopDefault(styled);
-const JoditEditorImport__default = /* @__PURE__ */ _interopDefault(JoditEditorImport);
-const JoditEditor = JoditEditorImport__default.default.default || JoditEditorImport__default.default;
+import { jsxs, jsx } from "react/jsx-runtime";
+import { memo, useRef, useState, useCallback, useMemo } from "react";
+import styled from "styled-components";
+import JoditEditorImport from "jodit-react";
+import { useIntl } from "react-intl";
+import { Field, Loader } from "@strapi/design-system";
+import { useFetchClient, useStrapiApp } from "@strapi/strapi/admin";
+import { D as DEFAULT_BUTTONS, S as STRAPI_MEDIA_BUTTON_NAME } from "./index-C39WRaBh.mjs";
+const JoditEditor = JoditEditorImport.default || JoditEditorImport;
 const cursorPlaceholder = `current_cursor_placeholder`;
 const cursorPlaceholderContent = `<${cursorPlaceholder}></${cursorPlaceholder}>`;
-const JoditContainer = styled__default.default.div`
+const JoditContainer = styled.div`
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
   }
@@ -132,7 +127,7 @@ const pick = (object, keys) => {
 const MediaLib = ({ isOpen = false, onChange = () => {
 }, onToggle = () => {
 } }) => {
-  const components = admin.useStrapiApp("ImageDialog", (state) => state.components);
+  const components = useStrapiApp("ImageDialog", (state) => state.components);
   if (!components || !isOpen) return null;
   const ImageDialog = components?.["media-library"] ?? null;
   const handleSelectAssets = (files) => {
@@ -154,7 +149,7 @@ const MediaLib = ({ isOpen = false, onChange = () => {
     return null;
   }
   const ComponentToRender = ImageDialog?.default || ImageDialog;
-  return /* @__PURE__ */ jsxRuntime.jsx(
+  return /* @__PURE__ */ jsx(
     ComponentToRender,
     {
       onClose: onToggle,
@@ -184,6 +179,7 @@ const JoditInput = ({
   fieldSchema,
   metadatas
 }) => {
+  const cleanPasteNextRef = useRef(false);
   const mediaLibButton = {
     name: "strapiMedia",
     iconURL: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgZmlsbD0iIzIxMjEzNCI+PHBhdGggZD0iTTI3IDVIOWEyIDIgMCAwIDAtMiAydjJINWEyIDIgMCAwIDAtMiAydjE0YTIgMiAwIDAgMCAyIDJoMThhMiAyIDAgMCAwIDItMnYtMmgyYTIgMiAwIDAgMCAyLTJWN2EyIDIgMCAwIDAtMi0ybS01LjUgNGExLjUgMS41IDAgMSAxIDAgMyAxLjUgMS41IDAgMCAxIDAtM00yMyAyNUg1VjExaDJ2MTBhMiAyIDAgMCAwIDIgMmgxNHptNC00SDl2LTQuNWw0LjUtNC41IDYuMjA4IDYuMjA4YTEgMSAwIDAgMCAxLjQxMyAwTDI0LjMzIDE1IDI3IDE3LjY3MnoiPjwvcGF0aD48L3N2Zz4=",
@@ -287,13 +283,13 @@ const JoditInput = ({
       dialog.open();
     }
   };
-  const { formatMessage } = reactIntl.useIntl();
-  const { post } = admin.useFetchClient();
-  const editorRef = react.useRef(null);
-  const [mediaLibVisible, setMediaLibVisible] = react.useState(false);
-  const [initialValue] = react.useState(value || "");
-  const [isLoading, setIsLoading] = react.useState(false);
-  const toggleMediaLib = react.useCallback(() => {
+  const { formatMessage } = useIntl();
+  const { post } = useFetchClient();
+  const editorRef = useRef(null);
+  const [mediaLibVisible, setMediaLibVisible] = useState(false);
+  const [initialValue] = useState(value || "");
+  const [isLoading, setIsLoading] = useState(false);
+  const toggleMediaLib = useCallback(() => {
     setMediaLibVisible((prev) => !prev);
   }, []);
   const fileToMediaObject = async (file, handleFileUpload2, webpEnabled2 = []) => {
@@ -339,8 +335,8 @@ const JoditInput = ({
   };
   const options = attribute?.options || {};
   const height = options.height || 400;
-  const buttons = options.buttons ? options.buttons.split(",").map((btn) => btn.trim()) : index.DEFAULT_BUTTONS.split(",").map((btn) => btn.trim());
-  const mediaLibButtonIndex = buttons.findIndex((btn) => btn === index.STRAPI_MEDIA_BUTTON_NAME);
+  const buttons = options.buttons ? options.buttons.split(",").map((btn) => btn.trim()) : DEFAULT_BUTTONS.split(",").map((btn) => btn.trim());
+  const mediaLibButtonIndex = buttons.findIndex((btn) => btn === STRAPI_MEDIA_BUTTON_NAME);
   if (mediaLibButtonIndex !== -1) {
     buttons[mediaLibButtonIndex] = mediaLibButton;
   }
@@ -351,7 +347,7 @@ const JoditInput = ({
     return acc;
   }, {}) : {};
   const webpEnabled = options.webp !== "" ? options.webp?.split(",") : [];
-  const handleFileUpload = react.useCallback(async (file) => {
+  const handleFileUpload = useCallback(async (file) => {
     try {
       const formData = new FormData();
       formData.append("files", file);
@@ -371,14 +367,12 @@ const JoditInput = ({
       return null;
     }
   }, [post]);
-  const config = react.useMemo(() => ({
+  const config = useMemo(() => ({
     readonly: disabled || options.readonly || false,
     height,
     toolbar: showToolbar,
     adaptive: false,
-    // Отключает общую адаптивность
     toolbarAdaptive: false,
-    // Запрещает прятать кнопки в "три точки"
     width: "100%",
     placeholder: formatMessage({
       id: placeholder || "jodit-editor.placeholder",
@@ -400,22 +394,41 @@ const JoditInput = ({
         list: Object.keys(fonts).length > 0 ? fonts : {}
       },
       copytext: copyTextButton,
-      // COPYTEXT: регистрация кнопки
       linkbtn: insertLinkButton
-      // LINKBTN: регистрация кнопки
     },
     // Event handlers
     events: {
       afterInit: function(jodit) {
         console.log("📎 Jodit: Editor initialized, storing instance:", jodit);
+        jodit.editor.addEventListener("keydown", (e) => {
+          if (e.ctrlKey && e.shiftKey && (e.key === "V" || e.key === "v")) {
+            cleanPasteNextRef.current = true;
+          }
+        });
       },
       beforeOpen: () => {
         console.log("📎 Jodit: Editor opened");
       },
-      // Handle paste events for images, videos, and audio
+      // Единый обработчик paste: чистая вставка + медиафайлы
       paste: async (e) => {
-        const items = e.clipboardData?.items;
         const jodit = editorRef.current;
+        if (cleanPasteNextRef.current) {
+          cleanPasteNextRef.current = false;
+          e.preventDefault();
+          e.stopPropagation();
+          const text = e.clipboardData?.getData("text/plain") || "";
+          const clean = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>");
+          jodit?.selection.insertHTML(`<p>${clean}</p>`);
+          const newContent = jodit?.value || "";
+          onChange({
+            target: {
+              name,
+              value: newContent.split(cursorPlaceholderContent).join("").trim()
+            }
+          });
+          return;
+        }
+        const items = e.clipboardData?.items;
         jodit?.selection.insertHTML(cursorPlaceholderContent);
         if (items) {
           for (let i = 0; i < items.length; i++) {
@@ -426,14 +439,13 @@ const JoditInput = ({
               if (file) {
                 const mediaObject = await fileToMediaObject(file, handleFileUpload, webpEnabled);
                 const mediaHtml = generateMediaHtml(mediaObject);
-                const jodit2 = editorRef.current;
-                const nodeToSelect = jodit2?.editor.querySelector(cursorPlaceholder);
+                const nodeToSelect = jodit?.editor.querySelector(cursorPlaceholder);
                 if (nodeToSelect) {
-                  jodit2?.selection?.setCursorBefore(nodeToSelect);
-                  jodit2?.selection.removeNode(nodeToSelect);
+                  jodit?.selection?.setCursorBefore(nodeToSelect);
+                  jodit?.selection.removeNode(nodeToSelect);
                 }
-                jodit2?.selection.insertHTML(mediaHtml);
-                const newContent = jodit2?.value || "";
+                jodit?.selection.insertHTML(mediaHtml);
+                const newContent = jodit?.value || "";
                 onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join("").trim() } });
               }
               break;
@@ -453,14 +465,13 @@ const JoditInput = ({
             if (file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/")) {
               const mediaObject = await fileToMediaObject(file, handleFileUpload, webpEnabled);
               const mediaHtml = generateMediaHtml(mediaObject);
-              const jodit2 = editorRef.current;
-              const nodeToSelect = jodit2?.editor.querySelector(cursorPlaceholder);
+              const nodeToSelect = jodit?.editor.querySelector(cursorPlaceholder);
               if (nodeToSelect) {
-                jodit2?.selection?.setCursorBefore(nodeToSelect);
-                jodit2?.selection.removeNode(nodeToSelect);
+                jodit?.selection?.setCursorBefore(nodeToSelect);
+                jodit?.selection.removeNode(nodeToSelect);
               }
-              jodit2?.selection.insertHTML(mediaHtml);
-              const newContent = jodit2?.value || "";
+              jodit?.selection.insertHTML(mediaHtml);
+              const newContent = jodit?.value || "";
               onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join("").trim() } });
             }
           }
@@ -495,8 +506,8 @@ const JoditInput = ({
   const isSourceMode = (jodit) => {
     return jodit?.getMode?.() === 2;
   };
-  return /* @__PURE__ */ jsxRuntime.jsxs(
-    designSystem.Field.Root,
+  return /* @__PURE__ */ jsxs(
+    Field.Root,
     {
       name,
       id: name,
@@ -505,8 +516,8 @@ const JoditInput = ({
       hint: displayHint,
       style: { position: "relative" },
       children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: displayLabel }),
-        /* @__PURE__ */ jsxRuntime.jsx(JoditContainer, { children: /* @__PURE__ */ jsxRuntime.jsx(
+        /* @__PURE__ */ jsx(Field.Label, { children: displayLabel }),
+        /* @__PURE__ */ jsx(JoditContainer, { children: /* @__PURE__ */ jsx(
           JoditEditor,
           {
             value: initialValue,
@@ -533,9 +544,9 @@ const JoditInput = ({
             }
           }
         ) }),
-        displayDescription ? /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, { children: displayDescription }) : null,
-        error ? /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Error, { children: error }) : null,
-        /* @__PURE__ */ jsxRuntime.jsx(
+        displayDescription ? /* @__PURE__ */ jsx(Field.Hint, { children: displayDescription }) : null,
+        error ? /* @__PURE__ */ jsx(Field.Error, { children: error }) : null,
+        /* @__PURE__ */ jsx(
           MediaLib,
           {
             isOpen: mediaLibVisible,
@@ -543,7 +554,7 @@ const JoditInput = ({
             onToggle: toggleMediaLib
           }
         ),
-        isLoading ? /* @__PURE__ */ jsxRuntime.jsx(
+        isLoading ? /* @__PURE__ */ jsx(
           "div",
           {
             style: {
@@ -554,7 +565,7 @@ const JoditInput = ({
               height: "100%",
               background: "rgba(255,255,255,0.5)"
             },
-            children: /* @__PURE__ */ jsxRuntime.jsx(
+            children: /* @__PURE__ */ jsx(
               "div",
               {
                 style: {
@@ -568,7 +579,7 @@ const JoditInput = ({
                   justifyContent: "center",
                   background: "rgba(255,255,255,0.5)"
                 },
-                children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Loader, {})
+                children: /* @__PURE__ */ jsx(Loader, {})
               }
             )
           }
@@ -577,8 +588,10 @@ const JoditInput = ({
     }
   );
 };
-const JoditInput_default = react.memo(JoditInput, (prevProps, nextProps) => {
+const JoditInput_default = memo(JoditInput, (prevProps, nextProps) => {
   return prevProps.name === nextProps.name && prevProps.required === nextProps.required && prevProps.disabled === nextProps.disabled && prevProps.error === nextProps.error;
 });
-exports.default = JoditInput_default;
-//# sourceMappingURL=JoditInput-DZv_kTgT.js.map
+export {
+  JoditInput_default as default
+};
+//# sourceMappingURL=JoditInput-C9Bnsv11.mjs.map

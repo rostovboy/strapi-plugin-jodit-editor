@@ -7,7 +7,7 @@ const JoditEditorImport = require("jodit-react");
 const reactIntl = require("react-intl");
 const designSystem = require("@strapi/design-system");
 const admin = require("@strapi/strapi/admin");
-const index = require("./index-Cz4dXn5P.js");
+const index = require("./index-DlJikBk5.js");
 const _interopDefault = (e) => e && e.__esModule ? e : { default: e };
 const styled__default = /* @__PURE__ */ _interopDefault(styled);
 const JoditEditorImport__default = /* @__PURE__ */ _interopDefault(JoditEditorImport);
@@ -184,6 +184,7 @@ const JoditInput = ({
   fieldSchema,
   metadatas
 }) => {
+  const cleanPasteNextRef = react.useRef(false);
   const mediaLibButton = {
     name: "strapiMedia",
     iconURL: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgZmlsbD0iIzIxMjEzNCI+PHBhdGggZD0iTTI3IDVIOWEyIDIgMCAwIDAtMiAydjJINWEyIDIgMCAwIDAtMiAydjE0YTIgMiAwIDAgMCAyIDJoMThhMiAyIDAgMCAwIDItMnYtMmgyYTIgMiAwIDAgMCAyLTJWN2EyIDIgMCAwIDAtMi0ybS01LjUgNGExLjUgMS41IDAgMSAxIDAgMyAxLjUgMS41IDAgMCAxIDAtM00yMyAyNUg1VjExaDJ2MTBhMiAyIDAgMCAwIDIgMmgxNHptNC00SDl2LTQuNWw0LjUtNC41IDYuMjA4IDYuMjA4YTEgMSAwIDAgMCAxLjQxMyAwTDI0LjMzIDE1IDI3IDE3LjY3MnoiPjwvcGF0aD48L3N2Zz4=",
@@ -376,9 +377,7 @@ const JoditInput = ({
     height,
     toolbar: showToolbar,
     adaptive: false,
-    // Отключает общую адаптивность
     toolbarAdaptive: false,
-    // Запрещает прятать кнопки в "три точки"
     width: "100%",
     placeholder: formatMessage({
       id: placeholder || "jodit-editor.placeholder",
@@ -400,22 +399,41 @@ const JoditInput = ({
         list: Object.keys(fonts).length > 0 ? fonts : {}
       },
       copytext: copyTextButton,
-      // COPYTEXT: регистрация кнопки
       linkbtn: insertLinkButton
-      // LINKBTN: регистрация кнопки
     },
     // Event handlers
     events: {
       afterInit: function(jodit) {
         console.log("📎 Jodit: Editor initialized, storing instance:", jodit);
+        jodit.editor.addEventListener("keydown", (e) => {
+          if (e.ctrlKey && e.shiftKey && (e.key === "V" || e.key === "v")) {
+            cleanPasteNextRef.current = true;
+          }
+        });
       },
       beforeOpen: () => {
         console.log("📎 Jodit: Editor opened");
       },
-      // Handle paste events for images, videos, and audio
+      // Единый обработчик paste: чистая вставка + медиафайлы
       paste: async (e) => {
-        const items = e.clipboardData?.items;
         const jodit = editorRef.current;
+        if (cleanPasteNextRef.current) {
+          cleanPasteNextRef.current = false;
+          e.preventDefault();
+          e.stopPropagation();
+          const text = e.clipboardData?.getData("text/plain") || "";
+          const clean = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>");
+          jodit?.selection.insertHTML(`<p>${clean}</p>`);
+          const newContent = jodit?.value || "";
+          onChange({
+            target: {
+              name,
+              value: newContent.split(cursorPlaceholderContent).join("").trim()
+            }
+          });
+          return;
+        }
+        const items = e.clipboardData?.items;
         jodit?.selection.insertHTML(cursorPlaceholderContent);
         if (items) {
           for (let i = 0; i < items.length; i++) {
@@ -426,14 +444,13 @@ const JoditInput = ({
               if (file) {
                 const mediaObject = await fileToMediaObject(file, handleFileUpload, webpEnabled);
                 const mediaHtml = generateMediaHtml(mediaObject);
-                const jodit2 = editorRef.current;
-                const nodeToSelect = jodit2?.editor.querySelector(cursorPlaceholder);
+                const nodeToSelect = jodit?.editor.querySelector(cursorPlaceholder);
                 if (nodeToSelect) {
-                  jodit2?.selection?.setCursorBefore(nodeToSelect);
-                  jodit2?.selection.removeNode(nodeToSelect);
+                  jodit?.selection?.setCursorBefore(nodeToSelect);
+                  jodit?.selection.removeNode(nodeToSelect);
                 }
-                jodit2?.selection.insertHTML(mediaHtml);
-                const newContent = jodit2?.value || "";
+                jodit?.selection.insertHTML(mediaHtml);
+                const newContent = jodit?.value || "";
                 onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join("").trim() } });
               }
               break;
@@ -453,14 +470,13 @@ const JoditInput = ({
             if (file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/")) {
               const mediaObject = await fileToMediaObject(file, handleFileUpload, webpEnabled);
               const mediaHtml = generateMediaHtml(mediaObject);
-              const jodit2 = editorRef.current;
-              const nodeToSelect = jodit2?.editor.querySelector(cursorPlaceholder);
+              const nodeToSelect = jodit?.editor.querySelector(cursorPlaceholder);
               if (nodeToSelect) {
-                jodit2?.selection?.setCursorBefore(nodeToSelect);
-                jodit2?.selection.removeNode(nodeToSelect);
+                jodit?.selection?.setCursorBefore(nodeToSelect);
+                jodit?.selection.removeNode(nodeToSelect);
               }
-              jodit2?.selection.insertHTML(mediaHtml);
-              const newContent = jodit2?.value || "";
+              jodit?.selection.insertHTML(mediaHtml);
+              const newContent = jodit?.value || "";
               onChange({ target: { name, value: newContent.split(cursorPlaceholderContent).join("").trim() } });
             }
           }
@@ -581,4 +597,4 @@ const JoditInput_default = react.memo(JoditInput, (prevProps, nextProps) => {
   return prevProps.name === nextProps.name && prevProps.required === nextProps.required && prevProps.disabled === nextProps.disabled && prevProps.error === nextProps.error;
 });
 exports.default = JoditInput_default;
-//# sourceMappingURL=JoditInput-DZv_kTgT.js.map
+//# sourceMappingURL=JoditInput-BnCIZz5r.js.map

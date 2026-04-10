@@ -7,7 +7,7 @@ const JoditEditorImport = require("jodit-react");
 const reactIntl = require("react-intl");
 const designSystem = require("@strapi/design-system");
 const admin = require("@strapi/strapi/admin");
-const index = require("./index-Cz4dXn5P.js");
+const index = require("./index-BIm2gab4.js");
 const _interopDefault = (e) => e && e.__esModule ? e : { default: e };
 const styled__default = /* @__PURE__ */ _interopDefault(styled);
 const JoditEditorImport__default = /* @__PURE__ */ _interopDefault(JoditEditorImport);
@@ -441,6 +441,10 @@ const JoditInput = ({
           }
         }
       },
+      hotkeys: {
+        "ctrl+shift+v": "pasteAsPlainText"
+        // встроенная команда Jodit
+      },
       // Handle drag and drop for images, videos, and audio
       drop: async (e) => {
         const jodit = editorRef.current;
@@ -581,4 +585,4 @@ const JoditInput_default = react.memo(JoditInput, (prevProps, nextProps) => {
   return prevProps.name === nextProps.name && prevProps.required === nextProps.required && prevProps.disabled === nextProps.disabled && prevProps.error === nextProps.error;
 });
 exports.default = JoditInput_default;
-//# sourceMappingURL=JoditInput-DZv_kTgT.js.map
+//# sourceMappingURL=JoditInput-CmXTrtRU.js.map
