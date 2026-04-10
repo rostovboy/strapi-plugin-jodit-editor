@@ -554,6 +554,37 @@ const JoditInput: React.FC<JoditInputProps> = ({
         console.log('📎 Jodit: Editor opened');
       },
 
+      keydown: (e: KeyboardEvent) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'V' || e.key === 'v')) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          navigator.clipboard.readText().then((text) => {
+            const jodit = editorRef.current;
+            if (!jodit) return;
+
+            const clean = text
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/\n\n/g, '</p><p>')
+              .replace(/\n/g, '<br>');
+
+            jodit.selection.insertHTML(`<p>${clean}</p>`);
+
+            const newContent = jodit.value || '';
+            onChange({
+              target: {
+                name,
+                value: newContent.split(cursorPlaceholderContent).join('').trim(),
+              },
+            });
+          }).catch(() => {
+            console.warn('Jodit: нет доступа к Clipboard API');
+          });
+        }
+      },
+
       // Handle paste events for images, videos, and audio
       paste: async (e: ClipboardEvent) => {
         const items = e.clipboardData?.items;
