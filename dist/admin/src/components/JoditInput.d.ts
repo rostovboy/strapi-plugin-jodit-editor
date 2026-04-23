@@ -1,4 +1,9 @@
 import React from 'react';
+declare module 'styled-components' {
+    interface DefaultTheme {
+        name: 'light' | 'dark';
+    }
+}
 interface JoditInputProps {
     name: string;
     value: string;

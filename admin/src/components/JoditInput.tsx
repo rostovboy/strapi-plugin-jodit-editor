@@ -8,6 +8,12 @@ import React, {
 
 import styled from 'styled-components';
 
+declare module 'styled-components' {
+  export interface DefaultTheme {
+    name: 'light' | 'dark';
+  }
+}
+
 import JoditEditorImport from 'jodit-react';
 
 // Handle ESM/CJS interop - jodit-react might export { default: Component } when bundled
@@ -86,6 +92,13 @@ const JoditContainer = styled.div`
     height: 19px;
     width: 19px;
   }
+
+  /* DARK THEME STYLES */
+  .jodit-wysiwyg {
+    background: ${({ theme }) => theme.name === 'dark' ? '#4a4a6a' : theme.colors.neutral0};
+    color: ${({ theme }) => theme.colors.neutral800};
+  }
+  /* END OF DARK THEME STYLES */
 
   /* Визуализация кастомного класса в редакторе */
   .text-to-copy, .jodit-btn {
